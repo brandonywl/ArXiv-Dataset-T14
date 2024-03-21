@@ -47,10 +47,6 @@ class Preprocessor:
         nlp = text_cleaning.prepare_spacy_nlp()
         pipes_to_disable = ['tagger', 'parser', 'ner', 'lemmatizer', 'textcat', 'tok2vec', 'attribute_ruler']
 
-        if lemmatizer == False:
-            pipes_to_disable.append("tagger")
-            pipes_to_disable.append("lemmatizer")
-
         for col in columns_interested:
             tokenized_abstracts = nlp.pipe(df[col], disable=pipes_to_disable)
 
@@ -81,7 +77,7 @@ class Preprocessor:
             
             for doc in tqdm(tokenized_abstracts, total=df.shape[0]):
                 tokens_ = [token.text for token in doc]
-                tokens.append(token)
+                tokens.append(tokens_)
 
             output_tokens[col] = tokens
 

@@ -43,4 +43,4 @@ if __name__ == "__main__":
     # load_cs_papers("")
 
     # Loads the parsed/cached from "", normalizes the data, and then stores it at "-normalized"
-    load_cs_papers("", "-normalized", run_preprocessor=True)
+    load_cs_papers("", "normalized", run_preprocessor=True)
