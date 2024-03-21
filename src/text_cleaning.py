@@ -167,6 +167,6 @@ def preprocess(text_series, trace_count=0, show_prev_per_step=False):
         text_series = temp
 
     if show_prev_per_step:
-        return text_series, prev_per_step if trace_count == 0 else text_series, counts, prev_per_step
+        return (text_series, prev_per_step) if trace_count == 0 else (text_series, counts, prev_per_step)
 
-    return text_series if trace_count == 0 else text_series, counts
+    return text_series if trace_count == 0 else (text_series, counts)

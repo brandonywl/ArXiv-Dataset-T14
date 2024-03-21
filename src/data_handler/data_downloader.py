@@ -1,9 +1,14 @@
 import json
 import requests
 
-import pandas as pd
+import os
 
-from src.data_handler.file_utils import get_data_path, get_folder_path, get_archive_path
+import pandas as pd
+from bs4 import BeautifulSoup
+import re
+
+
+from src.data_handler.file_utils import get_data_path, get_archive_path, ensure_file_folder_exists
 
 """
 This file takes the raw downloads from Kaggle and GitHub and parses them into the formats required for the project.
@@ -44,6 +49,11 @@ def process_raw_downloads():
 def process_citations():
     ref_file = get_archive_path(CITATION_FILE)
     data_file = get_data_path(METADATA_CITATIONS)
+    ensure_file_folder_exists(data_file)
+
+    if os.path.exists(data_file):
+        print("Citations exists")
+        return
 
     with open(ref_file) as f:
         citations = json.load(f)
@@ -63,6 +73,11 @@ def process_citations():
 def process_category():
     ref_file = get_archive_path(PAPER_FILE)
     data_file = get_data_path(METADATA_CATEGORY)
+    ensure_file_folder_exists(data_file)
+
+    if os.path.exists(data_file):
+        print("Catgeory exists")
+        return
 
     with open(data_file, "w+") as f_out:
         f_out.write("id,category_id\n")
@@ -83,6 +98,11 @@ def process_category():
 def process_papers():
     ref_file = get_archive_path(PAPER_FILE)
     data_file = get_data_path(METADATA_PAPER)
+    ensure_file_folder_exists(data_file)
+
+    if os.path.exists(data_file):
+        print("Papers exists")
+        return
 
     titles = []
     abstracts = []
@@ -122,6 +142,11 @@ def process_papers():
 def process_version():
     ref_file = get_archive_path(PAPER_FILE)
     data_file = get_data_path(METADATA_VERSION)
+    ensure_file_folder_exists(data_file)
+
+    if os.path.exists(data_file):
+        print("Version exists")
+        return
 
     with open(data_file, "w+") as f_out:
         f_out.write("id,year,month\n")
@@ -144,6 +169,12 @@ def process_version():
 def process_taxonomy():
     ref_file = get_archive_path(PAPER_FILE)
     data_file = get_data_path(METADATA_TAXONOMY)
+
+    ensure_file_folder_exists(data_file)
+
+    if os.path.exists(data_file):
+        print("Taxonomy exists")
+        return
 
     ## load taxonomy from https://arxiv.org/category_taxonomy
     website_url = requests.get('https://arxiv.org/category_taxonomy').text

@@ -7,7 +7,7 @@ The dataset can be found at https://www.kaggle.com/datasets/Cornell-University/a
 ## Setup
 Clone this repository first and download the dataset from the link above.
 
-For co-citation data, download the [co-citation json](https://github.com/mattbierbaum/arxiv-public-datasets/releases/download/v0.2.0/internal-references-v0.2.0-2019-03-01.json.gz). Unzip the file and rename it as ```internal-references-pdftotext.json```.
+For co-citation data, download the [co-citation json](https://github.com/mattbierbaum/arxiv-public-datasets/releases/download/v0.2.0/internal-references-v0.2.0-2019-03-01.json.gz). Unzip the file and ensure it is named ```internal-references-pdftotext.json```.
 
 Put the two json files into a folder ```archive``` at the root level.
 

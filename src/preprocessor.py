@@ -3,6 +3,7 @@ from tqdm import tqdm
 
 from src import text_cleaning
 
+
 class Preprocessor:
     def __init__(self, to_exclude=[], to_include=None, **pipeline_kwargs_dict):
         self.pipeline_fn = {
@@ -25,6 +26,7 @@ class Preprocessor:
 
     def execute(self, df, columns_interested=['abstract']):
         for preprocess in self.preprocessor_pipeline:
+            print(f"Executing {preprocess}")
             if preprocess in self.pipeline_kwargs_dict:
                 kwargs = self.pipeline_kwargs_dict[preprocess]
             else:
@@ -32,13 +34,15 @@ class Preprocessor:
             preprocess = self.pipeline_fn[preprocess]
 
             df = preprocess(df, columns_interested, **kwargs)
-
+            print("Done")
         return df
 
     def clean_input(self, df, columns_interested=['abstract']):
         df = df.copy(deep=True)
         for col in columns_interested:
-            df[col] = text_cleaning.preprocess(df[col])
+            results = text_cleaning.preprocess(df[col])
+            print(results)
+            df[col] = results
         return df
 
     def remove_abbv(self, df, columns_interested=['abstract'], **kwargs):
@@ -68,6 +72,10 @@ class Preprocessor:
         return df
 
     def tokenize(self, df, columns_interested=['abstract'], **kwargs):
+        # Can use kwargs to define the method of tokenization - i.e. using Keyword Extracted, Tokenize then NGram
+        # ranges, subword tokenizers like BERT
+        # Just put the below segment in a conditional
+
         nlp = text_cleaning.prepare_spacy_nlp()
         pipes_to_disable = ['tagger', 'parser', 'ner', 'lemmatizer', 'textcat', 'tok2vec', 'attribute_ruler', 'abbreviation_detector']
         output_tokens = {}
