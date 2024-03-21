@@ -32,8 +32,11 @@ def load_cs_papers(raw_suffix="", suffix=None, run_preprocessor=False, **kwargs)
 
     columns_interested = ['abstract']
 
-    cs_papers = load_raw_cs_papers(raw_suffix)
-    print("cs papers loaded")
+    if "cs_papers" in kwargs:
+        cs_papers = kwargs["cs_papers"]
+    else:
+        cs_papers = load_raw_cs_papers(raw_suffix)
+        print("cs papers loaded")
     if run_preprocessor:
         preprocessor = Preprocessor(to_exclude, **kwargs)
         cs_papers = preprocessor.execute(cs_papers, columns_interested=columns_interested)
@@ -56,13 +59,17 @@ def load_cs_papers(raw_suffix="", suffix=None, run_preprocessor=False, **kwargs)
 
 if __name__ == "__main__":
     # # Parses the dataset into a pd dataframe without normalization steps
-    # load_cs_papers("")
+    cs_papers = load_cs_papers("")
 
-    ## Loads the parsed/cached from "", normalizes the data, and then stores it at "-normalized"
+    # Loads the parsed/cached from "", normalizes the data, and then stores it at "-normalized"
     # load_cs_papers("", "normalized", run_preprocessor=True)
 
-    ## Load file ran at normalized if exists, else extract from the raw data. Runs preprocessor for only tokenize
-    # load_cs_papers("normalized", "abbv_casefold_spacytoken", run_preprocessor=True, to_include=['tokenize'])
+    # Another sample of loading to do preprocessing, but using the output from the previous loading
+    # load_cs_papers("", "clean_abbv_casefold_punct", run_preprocessor=True, cs_papers=cs_papers)
+
+    # Load file ran at normalized if exists, else extract from the raw data. Runs preprocessor for only tokenize
+    # load_cs_papers("clean_abbv_casefold_punct", "clean_abbv_casefold_punct_spacytoken", run_preprocessor=True,
+    #                to_include=['tokenize'])
 
     ## Loads the tokenized output
-    cached_tokens = load_cached_tokens("abbv_casefold_spacytoken")
+    cached_tokens = load_cached_tokens("clean_abbv_casefold_punct_spacytoken")

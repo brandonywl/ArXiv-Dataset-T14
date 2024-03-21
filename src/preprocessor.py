@@ -10,10 +10,11 @@ class Preprocessor:
             "clean": self.clean_input,
             "abbv": self.remove_abbv,
             "case-fold": self.case_folding,
+            "punct-removal": self.remove_punct,
             "tokenize": self.tokenize
         }
 
-        self.preprocessor_pipeline = ["clean", "abbv", "case-fold", "tokenize"]
+        self.preprocessor_pipeline = ["clean", "abbv", "case-fold", "punct-removal", "tokenize"]
 
         if to_include is not None:
             to_exclude = self.preprocessor_pipeline
@@ -40,9 +41,7 @@ class Preprocessor:
     def clean_input(self, df, columns_interested=['abstract']):
         df = df.copy(deep=True)
         for col in columns_interested:
-            results = text_cleaning.preprocess(df[col])
-            print(results)
-            df[col] = results
+            df[col] = text_cleaning.preprocess(df[col])
         return df
 
     def remove_abbv(self, df, columns_interested=['abstract'], **kwargs):
@@ -69,6 +68,12 @@ class Preprocessor:
         df = df.copy(deep=True)
         for col in columns_interested:
             df[col] = df[col].str.lower()
+        return df
+
+    def remove_punct(self, df, columns_interested=['abstract'], **kwargs):
+        df = df.copy(deep=True)
+        for col in columns_interested:
+            df[col] = df[col].str.replace(r"[^\w\s]", "", regex=True)
         return df
 
     def tokenize(self, df, columns_interested=['abstract'], **kwargs):
