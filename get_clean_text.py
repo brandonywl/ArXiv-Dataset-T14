@@ -72,4 +72,4 @@ if __name__ == "__main__":
     #                to_include=['tokenize'])
 
     ## Loads the tokenized output
-    cached_tokens = load_cached_tokens("clean_abbv_casefold_punct_spacytoken")
+    # cached_tokens = load_cached_tokens("clean_abbv_casefold_punct_spacytoken")
