@@ -34,6 +34,8 @@ def top_k_retrieval(pairwise_sim, top_k=None, return_score=False, ignore_self_si
     """
     Performs retrieval based on a pairwise similarity matrix. Expects the similarity to be higher -> more similar.
     Returns a list of indexes where the list of indexes are indexes to the papers most similar. The index of the returned list is the index of the paper itself.
+
+    NOTE: Turn off ignore_self_similarity if matrix a and b are not the same in computing similarity score.
     """
     top_papers_idx = []
     pairwise_sim = pairwise_sim.copy()
