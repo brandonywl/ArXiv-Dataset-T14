@@ -30,13 +30,16 @@ def euclidean_dist(a, b=None):
     distances = np.sqrt(np.einsum('ijk, ijk->ik', diff, diff))
     return distances
 
-def top_k_retrieval(pairwise_sim, top_k=None, return_score=False):
+def top_k_retrieval(pairwise_sim, top_k=None, return_score=False, ignore_self_similarity=True):
     """
     Performs retrieval based on a pairwise similarity matrix. Expects the similarity to be higher -> more similar.
     Returns a list of indexes where the list of indexes are indexes to the papers most similar. The index of the returned list is the index of the paper itself.
     """
     top_papers_idx = []
+    pairwise_sim = pairwise_sim.copy()
     for idx, paper in enumerate(pairwise_sim):
+        if ignore_self_similarity:
+            paper[idx] = np.Inf
         top_paper_idx = np.argsort(-paper)
         if top_k is not None:
             top_paper_idx = top_paper_idx[:top_k]
