@@ -1,7 +1,7 @@
 import os
 
 from src.data_handler.data_downloader import process_papers
-from src.data_handler.dataloader import load_raw_cs_papers, load_cached_tokens
+from src.data_handler.dataloader import load_raw_cs_papers, load_cached_tokens, load_version
 from src.data_handler.file_utils import get_data_path, get_cache_path, ensure_file_folder_exists
 
 from src.preprocessor import Preprocessor
@@ -24,7 +24,7 @@ def check_processed_state():
     return processed_state
 
 # If they are, load cs_papers
-def load_cs_papers(raw_suffix="", suffix=None, run_preprocessor=False, **kwargs):
+def load_cs_papers(raw_suffix="", suffix=None, run_preprocessor=False, filter_2019_up=True, **kwargs):
     if "to_exclude" in kwargs:
         to_exclude = kwargs['to_exclude']
     else:
@@ -37,6 +37,13 @@ def load_cs_papers(raw_suffix="", suffix=None, run_preprocessor=False, **kwargs)
     else:
         cs_papers = load_raw_cs_papers(raw_suffix)
         print("cs papers loaded")
+
+    if filter_2019_up:
+        print("Filtering to only papers before 2019 (not inclusive)")
+        versions = load_version()
+        papers_pre_2019 = versions[versions['year'] < 2019]
+        cs_papers = cs_papers.merge(papers_pre_2019, how='inner', on='id')
+    
     if run_preprocessor:
         preprocessor = Preprocessor(to_exclude, **kwargs)
         cs_papers = preprocessor.execute(cs_papers, columns_interested=columns_interested)
