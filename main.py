@@ -1,8 +1,11 @@
 import os
+import numpy as np
 import pandas as pd
 import streamlit as st
 from bertopic import BERTopic
 import plotly.graph_objects as go
+from sklearn.metrics.pairwise import pairwise_distances
+from src.topic_similarity import get_intertopic_dist
 
 st.header('Google Scholar (at home)')
 
@@ -92,8 +95,22 @@ with overview_tab:
         st.write(query["Name"])
         st.write(query)
 
-        st.subheader(f'Top 5 papers from identified topic:')
+        st.subheader(f'Top 5 papers recommendations from identified topic:')
         paper_rank_df = df.query(f'`title`!="{paper_name}"')
         paper_rank_df = paper_rank_df.query(f'`Topic`=={topic_num}')\
                             .sort_values(['citation_count'], ascending=False).head()
         st.write(paper_rank_df)
+
+with sim_topic_tab:
+    if submitted:
+        st.subheader(f'Similar topics you might be interested in:')
+        intertopic_dist = get_intertopic_dist(model, topics = None, top_n_topics = None, custom_labels = False)
+        
+        pairwise_dist = pairwise_distances(intertopic_dist[['x','y']].to_numpy())
+        ind = np.argpartition(pairwise_dist[0], 6)[:6] # top 6 argument of smallest distance
+        other_topic = np.delete(ind, [0]).tolist() # remove 0-th element as it is the pairwise distance of topic against itself
+
+        sim_paper_rank = df.query('Topic.isin(@other_topic)', engine="python")\
+                            .sort_values(['citation_count'], ascending=False).head()
+        st.write(sim_paper_rank)
+
