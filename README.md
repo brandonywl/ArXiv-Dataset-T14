@@ -16,13 +16,7 @@ The dataset can be found at https://www.kaggle.com/datasets/Cornell-University/a
         load_cs_papers("")
     ```
 
-    Or you could also define pre-processing steps to be run. This snippet stores it at ```./data/arxiv-cs-papers-normalized.csv```
-    ```
-        load_cs_papers("", "normalized", run_preprocessor=True)
-    ```
-
-5. Recommended: Setup seperate conda environments to run Streamlit app and to train Bertopic model
-    ```
-    conda env create -f streamlit_env.yml
-    conda env create -f bertopic_env.yml
-    ```
+Or you could also define pre-processing steps to be run. This snippet stores it at ```./data/arxiv-cs-papers-normalized.csv```
+```
+    load_cs_papers("", "normalized", run_preprocessor=True)
+```
