@@ -26,3 +26,16 @@ The dataset can be found at https://www.kaggle.com/datasets/Cornell-University/a
     conda env create -f streamlit_env.yml
     conda env create -f bertopic_env.yml
     ```
+
+    To replicate the bertopic training environment:
+    ```
+    conda install -c conda-forge numpy
+    conda install -c conda-forge pandas
+    conda install -c conda-forge scikit-learn
+    conda install -c conda-forge hdbscan
+    pip install bertopic
+
+    pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
+    pip install bertopic
+    pip install cuml-cu11 --extra-index-url=https://pypi.nvidia.com
+    ```
