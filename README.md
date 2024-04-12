@@ -21,13 +21,13 @@ The dataset can be found at https://www.kaggle.com/datasets/Cornell-University/a
         load_cs_papers("", "normalized", run_preprocessor=True)
     ```
 
-5. Recommended: Setup seperate conda environments to run Streamlit app and to train Bertopic model
+5. Recommended: Setup seperate conda environments to run Streamlit app and to train BERTopic model
     ```
     conda env create -f streamlit_env.yml
     conda env create -f bertopic_env.yml
     ```
 
-    To replicate the bertopic training environment:
+    To replicate the bertopic training environment from scratch:
     ```
     conda install -c conda-forge numpy
     conda install -c conda-forge pandas
@@ -39,3 +39,6 @@ The dataset can be found at https://www.kaggle.com/datasets/Cornell-University/a
     pip install bertopic
     pip install cuml-cu11 --extra-index-url=https://pypi.nvidia.com
     ```
+6. Save trained BERTopic models to `models` folder.
+    
+    * Download path: [Link](https://drive.google.com/file/d/1N2H3_4pi-JKt1K-oB7LmWD3rZbHa8WNN/view?usp=drive_link)
