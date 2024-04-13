@@ -5,6 +5,9 @@ from datetime import datetime
 from bertopic import BERTopic
 # from cuml.cluster import HDBSCAN
 from sklearn.cluster import KMeans
+from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import CountVectorizer
+from bertopic.representation import KeyBERTInspired
 
 def main(input_filepath):
     "Loads input data file, runs BERTopic pipeline and saves model"

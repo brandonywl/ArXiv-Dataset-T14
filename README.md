@@ -5,16 +5,16 @@ This project is done in fulfilment of CS5246 Text Mining. We are focusing on the
 The dataset can be found at https://www.kaggle.com/datasets/Cornell-University/arxiv
 
 ## Setup
-Clone this repository first and download the dataset from the link above.
+1. Clone this repository first and download the dataset from the link above.
 
-For co-citation data, download the [co-citation json](https://github.com/mattbierbaum/arxiv-public-datasets/releases/download/v0.2.0/internal-references-v0.2.0-2019-03-01.json.gz). Unzip the file and ensure it is named ```internal-references-pdftotext.json```.
+2. For co-citation data, download the [co-citation json](https://github.com/mattbierbaum/arxiv-public-datasets/releases/download/v0.2.0/internal-references-v0.2.0-2019-03-01.json.gz). Unzip the file and ensure it is named ```internal-references-pdftotext.json```.
 
-Put the two json files into a folder ```archive``` at the root level.
+3. Put the two json files into a folder ```archive``` at the root level.
 
-You can run the following code snippet to just process the downloaded data into segmented chunks. It will then store it at ```./data/arxiv-cs-papers.csv```
-```
-    load_cs_papers("")
-```
+4. You can run the following code snippet to just process the downloaded data into segmented chunks. It will then store it at ```./data/arxiv-cs-papers.csv```
+    ```
+        load_cs_papers("")
+    ```
 
 Or you could also define pre-processing steps to be run. This snippet stores it at ```./data/arxiv-cs-papers-normalized.csv```
 ```

@@ -1,7 +1,9 @@
 .venv/
 .idea/
+.conda/
 
 **/__pycache__/
+**/.ipynb_checkpoints/
 
 data/
 cached/
