@@ -34,7 +34,6 @@ The dataset can be found at https://www.kaggle.com/datasets/Cornell-University/a
     conda install -c conda-forge scikit-learn
     conda install -c conda-forge hdbscan
     pip install bertopic
-
     pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
     pip install bertopic
     pip install cuml-cu11 --extra-index-url=https://pypi.nvidia.com
@@ -42,3 +41,25 @@ The dataset can be found at https://www.kaggle.com/datasets/Cornell-University/a
 6. Save trained BERTopic models to `models` folder.
     
     * Download path: [Link](https://drive.google.com/file/d/1N2H3_4pi-JKt1K-oB7LmWD3rZbHa8WNN/view?usp=drive_link)
+
+
+- Running KMeans classification needs to open `kmeans_classify.ipynb`.<br>
+There are three parameters in the Notebook. They will control:<br>
+a. `FAST_RUN_WITH_EXISTING_DATA`: whether re-train the model or just load model from existing pickle file<br>
+b. `NORMALIZE_VECTOR`: whether normalize word2vec result<br>
+c. `USE_TFIDF`: whether using tf-idf or word2vec to vectorize words and docs<br> 
+
+Example:<br>
+```
+FAST_RUN_WITH_EXISTING_DATA = True
+USE_TFIDF = True
+```
+The program will load the existing models and use Tf-idf to vectorize words<br><br>
+
+```
+FAST_RUN_WITH_EXISTING_DATA = False
+USE_TFIDF = False
+NORMALIZE_VECTOR = True
+```
+The program will re-train the models, using word2vec to vectorize words, and normalize the vectorized words. The newly trained model will be put into sub-folder "model_data" and replace the previous models. <br>
+- After setting the above parameters, run the cells in sequence. <br>
