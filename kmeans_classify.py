@@ -6,8 +6,11 @@ import matplotlib.pyplot as plt
 from gensim.models import Word2Vec
 from sklearn.cluster import KMeans
 from sklearn import metrics
+from sklearn.feature_extraction.text import TfidfVectorizer
 from wordcloud import WordCloud
 import numpy as np
+import pandas as pd
+from tqdm import tqdm
 
 
 # The function clean_text is used to clean up the user's input, remove stop words, etc.
@@ -42,6 +45,7 @@ def save_model_to_pickle(model_name, file_name):
         os.makedirs(model_data_path)
     pickle.dump(model_name, open(os.getcwd() + "/" + file_name, "wb"))
 
+
 # load any model or pre-trained info from pickle file
 def load_from_pickle(file_name):
     file_name = os.getcwd() + "/" + file_name
@@ -58,43 +62,50 @@ def load_from_pickle(file_name):
 # concatenate data_df, df_categories and df_taxonomy
 # add field "year" based on arXiv naming convension
 # remove stop words to faciliate extracting key info. if input parameter remove_stop_words = False, then skip removing_stop_words, the function could run mush faster
-def concatenate_data(data_df, df_categories, df_taxonomy, remove_stop_words = False):
-    data = data_df.merge(df_categories, how = "left", on="id")
-    data = data.merge(df_taxonomy, how='left', on='category_id')
+def further_process_data(data_df, remove_stop_words = False):
+    # data = data_df.merge(df_categories, how = "left", on="id")
+    # data = data.merge(df_taxonomy, how='left', on='category_id')
+    data = data_df.copy()
+    year = []
+    abstract = []
+    nltk.download('stopwords')
+    stop_words = stopwords.words('english')
+    for index, row in tqdm(data.iterrows(), total=data.shape[0]):
 
-    def get_year(x):
         # based on the rules on arXiv website: https://info.arxiv.org/help/arxiv_identifier.html
-        match = re.search(r"\w+(\.|-)\w+/(\d{2})\d+", x)
+        match = re.search(r"\w+(\.|-)\w+/(\d{2})\d+", row['id'])
         if match:
             if match[2][0] == "9":
-                return int("19" + match[2])
+                year.append(int("19" + match[2]))
             else:
-                return int("20" + match[2])
+                year.append(int("20" + match[2]))
         else:
-            match =  re.search(r"(\d{2})\d{2}\.\d+", x)
+            match =  re.search(r"(\d{2})\d{2}\.\d+", row['id'])
             if match:
-                return int("20" + match[1])
+                year.append(int("20" + match[1]))
             else:
                 # could not find the matching pattern, return the original format
-                return 0
-    # removing stop words need 10+ mins.
-    if remove_stop_words:    
-        nltk.download('stopwords')
-        stop_words = stopwords.words('english')
-        def remove_stopwords(x):
-            tokens = word_tokenize(x)  # Get tokens from text
+                year.append(0)
+
+        # removing stop words need 10+ mins.
+        if remove_stop_words:    
+            tokens = word_tokenize(row['abstract'])  # Get tokens from text
             tokens = [t for t in tokens if not t in stop_words]  
-            return ' '.join(tokens)
+            abstract.append(' '.join(tokens))
 
-        data['abstract'] = data['abstract'].apply(remove_stopwords)
-
-    data['year'] = data['id'].apply(get_year)
-    data.year = data.year.astype("int")
+    # data['year'] = data['id'].apply(get_year)
+    data['year'] = pd.Series(year)
+    data['year'] = data['year'].astype("int")
+    # if remove stop words, update Series "abstract"
+    if remove_stop_words:
+        data['abstract'] = pd.Series(abstract)
+        data['abstract'].fillna("", inplace = True)
     # some paper's category_name is NA
-    data.category_name.fillna("NA", inplace=True)
+    # data.category_name.fillna("NA", inplace=True)
 
     data.to_csv(os.getcwd() + "/model_data/data_df.csv")
     return data
+
 
 # get average of each word vector to represent the doc
 def vectorize_single_doc(tokenized_doc, model):
@@ -146,29 +157,30 @@ def generate_vector_for_user_input(user_input, vectorizer):
 # centroid_paper_num - how many papers to pick up
 # top_key_words - how many keywords to pick up
 # return: the selected paper ids, the selected keywords
-def centroids_papers_keywords_in_clusters(km_model, data_df, word_vectorizer, vectorized_docs, cluster_num, centroid_paper_num = 10, top_key_words = 10):
+# def papers_keywords_in_clusters(km_model, data_df, word_vectorizer, vectorized_docs, cluster_num, centroid_paper_num = 10, top_key_words = 10):
 
-    # find the most centric word vectors in each K-Means cluster as the most representative of the cluster
-    centroids_tokens = []
-    most_representative = word_vectorizer.wv.most_similar(positive =[km_model.cluster_centers_[cluster_num]], topn = top_key_words)
-    for t in most_representative:
-        centroids_tokens.append(t[0])
+#     # find the most centric word vectors in each K-Means cluster as the most representative of the cluster
+#     centroids_tokens = []
+#     most_representative = word_vectorizer.wv.most_similar(positive =[km_model.cluster_centers_[cluster_num]], topn = top_key_words)
+#     for t in most_representative:
+#         centroids_tokens.append(t[0])
 
-    # sorting based on the vector distance toward to the center of the cluster
-    most_representative_docs_index = np.argsort(
-        np.linalg.norm(vectorized_docs - km_model.cluster_centers_[cluster_num], axis=1)
-    )
+    # # sorting based on the vector distance toward to the center of the cluster
+    # most_representative_docs_index = np.argsort(
+    #     np.linalg.norm(vectorized_docs - km_model.cluster_centers_[cluster_num], axis=1)
+    # )
 
     # find the papers closest to the center of the the cluster
-    print("\n-------------------------------------------")
-    print("Top {} papers closest to the center of Cluster {}".format(centroid_paper_num, cluster_num))
-    centroid_paper_ids = most_representative_docs_index[: centroid_paper_num]
+    # print("\n-------------------------------------------")
+    # print("Top {} papers closest to the center of Cluster {}".format(centroid_paper_num, cluster_num))
+    # centroid_paper_ids = most_representative_docs_index[: centroid_paper_num]
 
-    records = data_df.iloc[most_representative_docs_index[:centroid_paper_num], :][['id', 'title']].reset_index(drop=True)
-    print(records)
+    # records = data_df.iloc[most_representative_docs_index[:centroid_paper_num], :][['id', 'title']].reset_index(drop=True)
+    # print(records)
 
-    print("Top {} keywords closest to the center of Cluster {}\n{}".format(top_key_words, cluster_num, centroids_tokens))
-    return records.id, centroids_tokens
+    # print("Top {} keywords closest to the center of Cluster {}\n{}".format(top_key_words, cluster_num, centroids_tokens))
+    # return records.id, centroids_tokens
+
 
 # since paper might cover multiple categories, when visualizing the data,
 # show this limitation. 
@@ -224,12 +236,46 @@ def generate_word_and_doc_vectors(data_df):
 
     return word_vectorizer, vectorized_docs 
 
+def generate_tfidf_vectors(data_df):
+    vectorizer = TfidfVectorizer(max_features=3000, ngram_range = (1, 2),  min_df=3, max_df=0.7) 
+    doc_vectors = vectorizer.fit_transform(data_df['abstract'])
+    tfidf_tokens = vectorizer.get_feature_names_out()
+    save_model_to_pickle(vectorizer, "model_data/tfidf_vectorizer.pkl")
+    print("The first 10 tokens:", tfidf_tokens[:10])
+
+    return vectorizer, doc_vectors, tfidf_tokens 
+
+
+# use existing word_vectorizer to further normalize and then calculate doc vector
+def normalize_word2vec_model(data_df, word_vectorizer):
+    tokenized_docs = data_df.abstract.str.split()
+    word_vectorizer.init_sims(replace=True)
+    save_model_to_pickle(word_vectorizer, "model_data/norm_word2vec_model.pkl")
+    
+    norm_vectorized_docs = vectorize(tokenized_docs, model=word_vectorizer)
+    print("vectorized_docs shape: samples - {}, each sample dimension - {}".format(len(norm_vectorized_docs), len(norm_vectorized_docs[0])))
+    save_model_to_pickle(norm_vectorized_docs, "model_data/norm_vectorized_doc.pkl")
+
+    return word_vectorizer, norm_vectorized_docs
+
+
 # Use KMeans to classify the vectorized data. Save the model to pickle
-def fit_kmean_model(cluster_num, vectorized_docs):
-    km = KMeans(n_clusters=cluster_num, init='k-means++', max_iter=200)
+def fit_kmean_model(cluster_num, vectorized_docs, normalize = False):
+    km = KMeans(n_clusters=cluster_num, init='k-means++', max_iter=200, n_init="auto")
     print("Start fit into Kmeans model. Make take several minutes.")
     km.fit(np.array(vectorized_docs))
-    save_model_to_pickle(km, "model_data/km_model.pkl")
+    if normalize:
+        save_model_to_pickle(km, "model_data/norm_km_model.pkl")
+    else:
+        save_model_to_pickle(km, "model_data/km_model.pkl")
+    return km
+
+# Use KMeans to classify the vectorized data. Save the model to pickle
+def fit_kmean_model_tfidf(cluster_num, vectorized_docs):
+    km = KMeans(n_clusters=cluster_num, init='k-means++', max_iter=200, n_init="auto")
+    print("Start fit into Kmeans model. Make take several minutes.")
+    km.fit(vectorized_docs)
+    save_model_to_pickle(km, "model_data/tfidf_km_model.pkl")
     return km
 
 # Measure KMean result. Please note this result is not accurate, since each
@@ -296,10 +342,32 @@ def report_cluster_info(cluster_num, word_vectorizer, km_model, data_df, df_cita
         print("cluster_num is beyond the boundary.")
         return
     
-    centroids_papers_keywords_in_clusters(km_model, data_df, word_vectorizer, vectorized_docs, cluster_num, centroid_paper_num=5, top_key_words = 10)
-    top_influencial_in_cluster(data_df, df_citations, km_model, cluster_num, 10)
-    centric_words_cloud(km_model, word_vectorizer, cluster_num, top_words=10)
 
+    centroids_tokens = []
+    most_representative = word_vectorizer.wv.most_similar(positive =[km_model.cluster_centers_[cluster_num]], topn = 20)
+    for t in most_representative:
+        centroids_tokens.append(t[0])
+
+    # centroids_papers_keywords_in_clusters(km_model, data_df, word_vectorizer, vectorized_docs, cluster_num, centroid_paper_num=5, top_key_words = 10)
+    top_influencial_in_cluster(data_df, df_citations, km_model, cluster_num, 10)
+    centric_words_cloud(km_model, word_vectorizer, cluster_num, top_words=20)
+
+
+def report_cluster_info_tfidf(cluster_num, tfidf_vectorizer, tfidf_km_model, data_df, df_citations):
+    if cluster_num >= len(set(tfidf_km_model.labels_)):
+        print("cluster_num is beyond the boundary.")
+        return
+    
+    words_importance = sorted(zip(tfidf_vectorizer.get_feature_names_out(), tfidf_km_model.cluster_centers_[cluster_num]), key=lambda x: x[1], reverse=True)[:20]
+    
+    important_words = [word for word, score in words_importance]
+    important_words_dict = {word: score for word, score in words_importance}
+    top_influencial_in_cluster(data_df, df_citations, tfidf_km_model, cluster_num, 10)
+    print(f"Cluster {cluster_num}'s top 20 keywords: {important_words}")
+    makeImage(important_words_dict)
+
+
+    # centric_words_cloud(tfidf_km_model, tfidf_vectorizer, cluster_num, top_words=10)
 # this function vectorize the user input and then utilize KMeans.predict to
 # find the closest cluster to the user query. Then it calls report_cluster_info to show the chosen cluster's information
 def predict_user_query_cluster(user_input, word_vectorizer, km_model, data_df, df_citations, vectorized_docs):
@@ -310,3 +378,18 @@ def predict_user_query_cluster(user_input, word_vectorizer, km_model, data_df, d
     cluster_num = label_[0]
     print("this input is closest to this cluster {}".format(cluster_num))
     report_cluster_info(cluster_num, word_vectorizer, km_model, data_df, df_citations, vectorized_docs)
+
+
+def predict_user_query_cluster_tfidf(user_input, tfidf_vectorizer, tfidf_km_model, data_df, df_citations):
+    # get user unput vector
+    
+    # tokenized = 
+    user_input_vector = tfidf_vectorizer.transform([user_input])
+    
+    label_ = tfidf_km_model.predict(user_input_vector).reshape(1, -1) #.astype('float')
+    # label_[0] represents the most possible cluster
+    cluster_num = int(label_[0])
+    print("this input is closest to this cluster {}".format(cluster_num))
+    report_cluster_info_tfidf(cluster_num, tfidf_vectorizer, tfidf_km_model, data_df, df_citations)
+
+
