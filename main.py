@@ -11,6 +11,20 @@ st.header('Google Scholar (at home)')
 
 model_set = set(os.listdir('models'))
 
+target_columns = [
+            'id',
+            'category_id',
+            'group_name',            
+            'year',
+            'title',
+            'authors',
+            'citation_count',
+            'journal-ref',
+            'category_name',
+            'category_description',
+            'abstract'
+        ]
+
 @st.cache_data
 def prep_df() -> pd.DataFrame:
     category_file = 'data/arxiv-metadata-ext-category.csv'
@@ -93,17 +107,20 @@ with overview_tab:
         topic_num = query['Topic'].iloc[0]
         st.subheader(f'Topic identified:')
         st.write(query["Name"])
+        query = query[target_columns]
         st.write(query)
 
         st.subheader(f'Top 5 papers recommendations from identified topic:')
         paper_rank_df = df.query(f'`title`!="{paper_name}"')
         paper_rank_df = paper_rank_df.query(f'`Topic`=={topic_num}')\
                             .sort_values(['citation_count'], ascending=False).head()
+        paper_rank_df = paper_rank_df[target_columns]
+        
         st.write(paper_rank_df)
 
 with sim_topic_tab:
     if submitted:
-        st.subheader(f'Similar topics you might be interested in:')
+        st.subheader(f'Similar topics & papers you might be interested in:')
         intertopic_dist = get_intertopic_dist(model, topics = None, top_n_topics = None, custom_labels = False)
         
         pairwise_dist = pairwise_distances(intertopic_dist[['x','y']].to_numpy())
@@ -112,5 +129,7 @@ with sim_topic_tab:
 
         sim_paper_rank = df.query('Topic.isin(@other_topic)', engine="python")\
                             .sort_values(['citation_count'], ascending=False).head()
+        sim_paper_rank = sim_paper_rank[target_columns]
+        
         st.write(sim_paper_rank)
 
