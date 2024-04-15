@@ -48,6 +48,21 @@ class Preprocessor:
         df = df.copy(deep=True)
 
         nlp = text_cleaning.prepare_spacy_nlp()
+
+
+        pipes_to_disable = ['parser', 'ner', 'textcat', 'abbreviation_detector']
+        # Apply lemmatize first
+        for col in columns_interested:
+            tokenized_abstracts = nlp.pipe(df[col], disable=pipes_to_disable)
+
+            lemmatized_text = []
+
+            for doc in tqdm(tokenized_abstracts, total=df.shape[0]):
+                text = "".join([token.text_with_ws.replace(token.text, token.lemma_) for token in doc])
+                lemmatized_text.append(text)
+
+            df[col] = pd.Series(lemmatized_text)
+
         pipes_to_disable = ['tagger', 'parser', 'ner', 'lemmatizer', 'textcat', 'tok2vec', 'attribute_ruler']
 
         for col in columns_interested:
@@ -73,13 +88,15 @@ class Preprocessor:
     def remove_punct(self, df, columns_interested=['abstract'], **kwargs):
         df = df.copy(deep=True)
         for col in columns_interested:
-            df[col] = df[col].str.replace(r"[^\w\s]", "", regex=True)
+            df[col] = df[col].str.replace(r"[,./<>?;\':\"\{\}\\|\-\=\_\+\!\@\#\$\%\^\&\*\(\)]", "", regex=True)
         return df
 
     def tokenize(self, df, columns_interested=['abstract'], **kwargs):
         # Can use kwargs to define the method of tokenization - i.e. using Keyword Extracted, Tokenize then NGram
         # ranges, subword tokenizers like BERT
         # Just put the below segment in a conditional
+
+        # Lemmatize + remove stopwords
 
         nlp = text_cleaning.prepare_spacy_nlp()
         pipes_to_disable = ['tagger', 'parser', 'ner', 'lemmatizer', 'textcat', 'tok2vec', 'attribute_ruler', 'abbreviation_detector']
@@ -89,7 +106,7 @@ class Preprocessor:
             tokens = []
             
             for doc in tqdm(tokenized_abstracts, total=df.shape[0]):
-                tokens_ = [token.text for token in doc]
+                tokens_ = [token.text for token in doc if not token.is_stop]
                 tokens.append(tokens_)
 
             output_tokens[col] = tokens

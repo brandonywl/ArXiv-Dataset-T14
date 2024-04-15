@@ -30,7 +30,7 @@ def load_cs_papers(raw_suffix="", suffix=None, run_preprocessor=False, filter_20
     else:
         to_exclude = ['tokenize']
 
-    columns_interested = ['abstract']
+    columns_interested = ['abstract'] if 'columns_interested' not in kwargs else kwargs['columns_interested']
 
     if "cs_papers" in kwargs:
         cs_papers = kwargs["cs_papers"]
