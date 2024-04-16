@@ -75,8 +75,8 @@ if __name__ == "__main__":
     load_cs_papers("", "clean_abbv_casefold_punct", run_preprocessor=True, cs_papers=cs_papers)
 
     # Load file ran at normalized if exists, else extract from the raw data. Runs preprocessor for only tokenize
-    # load_cs_papers("clean_abbv_casefold_punct", "clean_abbv_casefold_punct_spacytoken", run_preprocessor=True,
-    #                to_include=['tokenize'])
+    load_cs_papers("clean_abbv_casefold_punct", "clean_abbv_casefold_punct_spacytoken", run_preprocessor=True,
+                   to_include=['tokenize'])
 
     ## Loads the tokenized output
     # cached_tokens = load_cached_tokens("clean_abbv_casefold_punct_spacytoken")

@@ -21,9 +21,29 @@ Or you could also define pre-processing steps to be run. This snippet stores it 
     load_cs_papers("", "normalized", run_preprocessor=True)
 ```
 
-## Modules ##
-### KMeans classification and recommendation ###
-- Due to the big size of trained data, it is not put into this repository. You could download the trained KMeans model, word2vec, and Tf-idf models from the Google Drive:<br>https://drive.google.com/drive/u/1/folders/1SkgvFmTrqfRzHRMJZQcy557MsSpkdnGl. Put those downloaded files into sub folder "model_data" under project path.
+5. Recommended: Setup seperate conda environments to run Streamlit app and to train BERTopic model
+    ```
+    conda env create -f streamlit_env.yml
+    conda env create -f bertopic_env.yml
+    ```
+
+    To replicate the bertopic training environment from scratch:
+    ```
+    conda install -c conda-forge numpy
+    conda install -c conda-forge pandas
+    conda install -c conda-forge scikit-learn
+    conda install -c conda-forge hdbscan
+    conda install -c conda-forge spacy
+    conda install -c conda-forge cupy
+    
+    pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
+    pip install bertopic
+    pip install cuml-cu11 --extra-index-url=https://pypi.nvidia.com
+    ```
+6. Save trained BERTopic models to `models` folder.
+    
+    * Download path: [Link](https://drive.google.com/file/d/1N2H3_4pi-JKt1K-oB7LmWD3rZbHa8WNN/view?usp=drive_link)
+
 
 - Running KMeans classification needs to open `kmeans_classify.ipynb`.<br>
 There are three parameters in the Notebook. They will control:<br>
@@ -45,4 +65,3 @@ NORMALIZE_VECTOR = True
 ```
 The program will re-train the models, using word2vec to vectorize words, and normalize the vectorized words. The newly trained model will be put into sub-folder "model_data" and replace the previous models. <br>
 - After setting the above parameters, run the cells in sequence. <br>
-
