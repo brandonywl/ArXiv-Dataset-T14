@@ -33,7 +33,9 @@ The dataset can be found at https://www.kaggle.com/datasets/Cornell-University/a
     conda install -c conda-forge pandas
     conda install -c conda-forge scikit-learn
     conda install -c conda-forge hdbscan
-    pip install bertopic
+    conda install -c conda-forge spacy
+    conda install -c conda-forge cupy
+    
     pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
     pip install bertopic
     pip install cuml-cu11 --extra-index-url=https://pypi.nvidia.com

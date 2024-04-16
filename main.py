@@ -22,7 +22,8 @@ target_columns = [
             'journal-ref',
             'category_name',
             'category_description',
-            'abstract'
+            'abstract',
+            'Name'
         ]
 
 @st.cache_data
