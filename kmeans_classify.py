@@ -11,10 +11,13 @@ from wordcloud import WordCloud
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+import spacy
+
+nlp = spacy.load("en_core_web_sm") 
 
 
 # The function clean_text is used to clean up the user's input, remove stop words, etc.
-def clean_text(text, lemmatizer, tokenizer, stopwords):
+def clean_text(text):
     text = str(text).lower()  # Lowercase words
     text = re.sub(r"\[(.*?)\]", "", text)  # Remove [+XYZ chars] in content
     text = re.sub(r"\s+", " ", text)  # Remove multiple spaces in content
@@ -24,17 +27,12 @@ def clean_text(text, lemmatizer, tokenizer, stopwords):
         f"[{re.escape(string.punctuation)}]", "", text
     )  # Remove punctuation
 
-    tokens = tokenizer(text)  # Get tokens from text
-    tokens = [t for t in tokens if not t in stopwords]  # Remove stopwords
-    tokens = ["" if t.isdigit() else t for t in tokens]  # Remove digits
-    tokens = [t for t in tokens if len(t) > 1]  # Remove short tokens
-
     # lemmatization
-    lemmatized_doc = ""
-    for token in tokens:
-      if token not in stopwords:
-        lemmatized_doc = lemmatized_doc + " " + lemmatizer.lemmatize(token)
-    return lemmatized_doc
+    processed_doc = ""
+    for token in nlp(text):
+      if not token.is_stop:
+        processed_doc = processed_doc + " " + token.lemma_
+    return processed_doc
 
 # save model or vectorizer or any processed data into pickle file
 def save_model_to_pickle(model_name, file_name):
@@ -62,15 +60,15 @@ def load_from_pickle(file_name):
 # concatenate data_df, df_categories and df_taxonomy
 # add field "year" based on arXiv naming convension
 # remove stop words to faciliate extracting key info. if input parameter remove_stop_words = False, then skip removing_stop_words, the function could run mush faster
-def further_process_data(data_df, remove_stop_words = False):
+def further_process_data(data_df, abstract_df):
     # data = data_df.merge(df_categories, how = "left", on="id")
     # data = data.merge(df_taxonomy, how='left', on='category_id')
     data = data_df.copy()
     year = []
     abstract = []
-    nltk.download('stopwords')
-    stop_words = stopwords.words('english')
+
     for index, row in tqdm(data.iterrows(), total=data.shape[0]):
+
 
         # based on the rules on arXiv website: https://info.arxiv.org/help/arxiv_identifier.html
         match = re.search(r"\w+(\.|-)\w+/(\d{2})\d+", row['id'])
@@ -87,19 +85,27 @@ def further_process_data(data_df, remove_stop_words = False):
                 # could not find the matching pattern, return the original format
                 year.append(0)
 
-        # removing stop words need 10+ mins.
-        if remove_stop_words:    
-            tokens = word_tokenize(row['abstract'])  # Get tokens from text
-            tokens = [t for t in tokens if not t in stop_words]  
-            abstract.append(' '.join(tokens))
+        # removing stop words, remove eqn_latex, lemmanization. 
+        # processed_doc = ""
+        # text = re.sub("eqn_latex", "", str(row.abstract))
+        # for token in nlp(text):
+        #     if not token.is_stop:
+        #         processed_doc = processed_doc + " " + token.lemma_
+        # abstract.append(processed_doc)
+    
+            # tokens = word_tokenize(row['abstract'])  # Get tokens from text
+            # tokens = [t for t in tokens if not t in stop_words]  
+            # abstract.append(' '.join(tokens))
 
-    # data['year'] = data['id'].apply(get_year)
     data['year'] = pd.Series(year)
     data['year'] = data['year'].astype("int")
     # if remove stop words, update Series "abstract"
-    if remove_stop_words:
-        data['abstract'] = pd.Series(abstract)
-        data['abstract'].fillna("", inplace = True)
+    # if remove_stop_words:
+    abstract_df['abstract'] = abstract_df['abstract'].apply(lambda x: ' '.join(x))
+    abstract_df['abstract'] = abstract_df['abstract'].apply(lambda x: re.sub(r"\[\s?eqnlatex\s+\]", "", x))
+    abstract_df['abstract'] = abstract_df['abstract'].apply(lambda x: re.sub(r"\d+", " ", x))
+    data['abstract'] = abstract_df['abstract']
+    data['abstract'].fillna("", inplace = True)
     # some paper's category_name is NA
     # data.category_name.fillna("NA", inplace=True)
 
@@ -144,7 +150,7 @@ def vectorize(list_of_docs, model):
 
 # clean up user's input and vectorize the input doc as a vector
 def generate_vector_for_user_input(user_input, vectorizer):
-  processed_token = set(clean_text(user_input, WordNetLemmatizer(), word_tokenize, stopwords.words('english')).split())
+  processed_token = clean_text(user_input).split()
   new_vector = vectorize_single_doc(processed_token, vectorizer)
   return new_vector
 
@@ -184,8 +190,8 @@ def generate_vector_for_user_input(user_input, vectorizer):
 
 # since paper might cover multiple categories, when visualizing the data,
 # show this limitation. 
-def view_top_category_paper_amount(data_df, top_category_num, begin_year=1991, end_year=2021):
-    if begin_year == 2000 or end_year == 2021:
+def view_top_category_paper_amount(data_df, top_category_num, begin_year=1991, end_year=2019):
+    if begin_year == 1991 or end_year == 2019:
         stat_data = data_df.groupby("category_name").size().sort_values(ascending=False).reset_index(name='counts').head(top_category_num)
     else:
         stat_data = data_df[(data_df['year'] >=begin_year) & (data_df['year']<=end_year)].groupby("category_name").size().sort_values(ascending=False).reset_index(name='counts').head(top_category_num)
@@ -241,6 +247,7 @@ def generate_tfidf_vectors(data_df):
     doc_vectors = vectorizer.fit_transform(data_df['abstract'])
     tfidf_tokens = vectorizer.get_feature_names_out()
     save_model_to_pickle(vectorizer, "model_data/tfidf_vectorizer.pkl")
+    save_model_to_pickle(doc_vectors, "model_data/tfidf_vectorized_doc.pkl")
     print("The first 10 tokens:", tfidf_tokens[:10])
 
     return vectorizer, doc_vectors, tfidf_tokens 
@@ -381,13 +388,9 @@ def predict_user_query_cluster(user_input, word_vectorizer, km_model, data_df, d
 
 
 def predict_user_query_cluster_tfidf(user_input, tfidf_vectorizer, tfidf_km_model, data_df, df_citations):
-    # get user unput vector
-    
-    # tokenized = 
-    user_input_vector = tfidf_vectorizer.transform([user_input])
-    
-    label_ = tfidf_km_model.predict(user_input_vector).reshape(1, -1) #.astype('float')
-    # label_[0] represents the most possible cluster
+
+    user_input_vector = tfidf_vectorizer.transform([clean_text(user_input)])
+    label_ = tfidf_km_model.predict(user_input_vector).reshape(1, -1) 
     cluster_num = int(label_[0])
     print("this input is closest to this cluster {}".format(cluster_num))
     report_cluster_info_tfidf(cluster_num, tfidf_vectorizer, tfidf_km_model, data_df, df_citations)
