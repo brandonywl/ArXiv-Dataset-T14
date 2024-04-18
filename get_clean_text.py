@@ -66,17 +66,27 @@ def load_cs_papers(raw_suffix="", suffix=None, run_preprocessor=False, filter_20
 
 if __name__ == "__main__":
     # # Parses the dataset into a pd dataframe without normalization steps
-    cs_papers = load_cs_papers("")
+    # cs_papers = load_cs_papers("")
 
     # Loads the parsed/cached from "", normalizes the data, and then stores it at "-normalized"
     # load_cs_papers("", "normalized", run_preprocessor=True)
 
+    # Loads the parsed/cached from "", normalizes the data, and then stores it at "-clean_lemmatize_abbv_casefold_punct_stopwords"
+    cs_papers = load_cs_papers("", "clean_lemmatize_abbv_casefold_punct_stopwords", run_preprocessor=True)
+
+    load_cs_papers("", "abstract_spacy_tokens", run_preprocessor=True, cs_papers=cs_papers, to_include=["tokenize"])
+
     # Another sample of loading to do preprocessing, but using the output from the previous loading
-    load_cs_papers("", "clean_abbv_casefold_punct", run_preprocessor=True, cs_papers=cs_papers)
+    # load_cs_papers("", "clean_abbv_casefold_punct", run_preprocessor=True, cs_papers=cs_papers)
 
     # Load file ran at normalized if exists, else extract from the raw data. Runs preprocessor for only tokenize
-    load_cs_papers("clean_abbv_casefold_punct", "clean_abbv_casefold_punct_spacytoken", run_preprocessor=True,
-                   to_include=['tokenize'])
+    # load_cs_papers("clean_abbv_casefold_punct", "clean_abbv_casefold_punct_spacytoken", run_preprocessor=True, to_include=['tokenize'])
 
     ## Loads the tokenized output
     # cached_tokens = load_cached_tokens("clean_abbv_casefold_punct_spacytoken")
+
+    # # Runs the full normalization step and tokenizes it. Afterwards, adds a column of tokens into the dataframe and saves it.
+    # cs_papers = load_cs_papers("", "clean_lemmatize_abbv_casefold_punct_stopwords", run_preprocessor=True)
+    # cs_tokens = load_cs_papers("", "abstract_spacy_tokens", run_preprocessor=True, cs_papers=cs_papers, to_include=["tokenize"])
+    # cs_papers = cs_papers.assign(Abstract_Tokens=cs_tokens['abstract'])
+    # cs_papers.to_csv(get_data_path("arxiv-cs-papers-clean_lem_abbv_casefold_punct_stopwords_tokenized.csv"))
