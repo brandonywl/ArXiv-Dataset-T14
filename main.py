@@ -13,7 +13,6 @@ model_set = set(os.listdir('models'))
 
 target_columns = [
             'id',
-            'category_id',
             'group_name',            
             'year',
             'title',
@@ -21,35 +20,34 @@ target_columns = [
             'citation_count',
             'journal-ref',
             'category_name',
-            'category_description',
             'abstract',
             'Name'
         ]
 
 @st.cache_data
 def prep_df() -> pd.DataFrame:
-    category_file = 'data/arxiv-metadata-ext-category.csv'
-    citation_file = 'data/arxiv-metadata-ext-citation.csv'
-    taxonomy_file = 'data/arxiv-metadata-ext-taxonomy.csv'
-    version_file = 'data/arxiv-metadata-ext-version.csv'
+    # category_file = 'data/arxiv-metadata-ext-category.csv'
+    # citation_file = 'data/arxiv-metadata-ext-citation.csv'
+    # taxonomy_file = 'data/arxiv-metadata-ext-taxonomy.csv'
+    # version_file = 'data/arxiv-metadata-ext-version.csv'
 
-    category_df = pd.read_csv(category_file, dtype={"id":object})
-    citation_df = pd.read_csv(citation_file, dtype={"id":object})
-    citation_count_df = citation_df.groupby('id_reference')\
-                                    .count().reset_index()\
-                                    .rename(columns={'id_reference':'id', 'id':'citation_count'})\
-                                    .sort_values(by='citation_count', ascending=False)
-    taxonomy_df = pd.read_csv(taxonomy_file)
-    version_df = pd.read_csv(version_file, dtype={"id":object})
-    abstract_df = pd.read_csv('data/arxiv-cs-papers-clean_abbv_casefold_punct.csv', dtype={"id":object})
+    # category_df = pd.read_csv(category_file, dtype={"id":object})
+    # citation_df = pd.read_csv(citation_file, dtype={"id":object})
+    # citation_count_df = citation_df.groupby('id_reference')\
+    #                                 .count().reset_index()\
+    #                                 .rename(columns={'id_reference':'id', 'id':'citation_count'})\
+    #                                 .sort_values(by='citation_count', ascending=False)
+    # taxonomy_df = pd.read_csv(taxonomy_file)
+    # version_df = pd.read_csv(version_file, dtype={"id":object})
+    # abstract_df = pd.read_csv('data/arxiv-cs-papers-clean_abbv_casefold_punct.csv', dtype={"id":object})
 
-    df = citation_df.merge(category_df,on="id")\
-                .drop(columns=['id_reference'], axis=1)\
-                .merge(taxonomy_df,on="category_id").drop_duplicates(["id","group_name"])\
-                .query('`group_name`=="Computer Science"')\
-                .merge(version_df[["id","year"]], on ="id")\
-                .merge(abstract_df, on="id")\
-                .merge(citation_count_df, how='left', on='id')
+    # df = citation_df.merge(category_df,on="id")\
+    #             .drop(columns=['id_reference'], axis=1)\
+    #             .merge(taxonomy_df,on="category_id").drop_duplicates(["id","group_name"])\
+    #             .query('`group_name`=="Computer Science"')\
+    #             .merge(version_df[["id","year"]], on ="id")\
+    #             .merge(abstract_df, on="id")\
+    #             .merge(citation_count_df, how='left', on='id')
 
     # ids = category_df.merge(taxonomy_df, on="category_id")\
     #                 .query(f'group_name =="Computer Science"')\
@@ -62,8 +60,8 @@ def prep_df() -> pd.DataFrame:
 
     # df = cits.merge(category_df,on="id").merge(abstract_df, on="id")
                 
-    df['citation_count'] = df['citation_count'].fillna(0)    
-
+    # df['citation_count'] = df['citation_count'].fillna(0)    
+    df = pd.read_pickle('data/df.pickle')
     return df
 
 def add_topic(df:pd.DataFrame, model) -> pd.DataFrame:
