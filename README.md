@@ -44,7 +44,7 @@ Or you could also define pre-processing steps to be run. This snippet stores it 
     
     * Download path: [Link](https://drive.google.com/file/d/1N2H3_4pi-JKt1K-oB7LmWD3rZbHa8WNN/view?usp=drive_link)
 
-### Run Word2vec/Tf-idf + KMeans ###
+### Run KMeans Text Clustering ###
 Running KMeans classification needs to open `kmeans_classify.ipynb`.<br>
 There are two parameters in the Notebook. They will control:<br>
 a. `FAST_RUN_WITH_EXISTING_DATA`: whether re-train the model or just load model from existing pickle file<br>
@@ -63,4 +63,6 @@ FAST_RUN_WITH_EXISTING_DATA = False
 NORMALIZE_VECTOR = True
 ```
 The program will re-train the models, using word2vec to vectorize words, and normalize the vectorized words. The newly trained model will be put into sub-folder "model_data" and replace the previous models. <br>
-After setting the above parameters, run the cells in sequence. <br>
+
+After setting the above parameters, run the cells in sequence. <br><br>
+Note: You do not need to run the last section: `Model Evaluation` if you do not want to evaluate the model.
