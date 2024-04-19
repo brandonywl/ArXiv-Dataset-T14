@@ -13,6 +13,8 @@ import pandas as pd
 from tqdm import tqdm
 import spacy
 
+from src.utils import euclidean_dist
+
 nlp = spacy.load("en_core_web_sm") 
 
 
@@ -315,6 +317,13 @@ def top_influencial_in_cluster(data_df, citation_df, km_model, cluster_num, top_
         top_cited_papers = data_df[data_df.id.isin(papers_id)][['id', 'title']].reset_index(drop=True)
         print(top_cited_papers)
 
+def top_similar_paper_in_cluster(data_df, citation_df, km_model, cluster_num, distances):
+    data_df = data_df[km_model.labels_ == cluster_num]
+    data_df = data_df.assign(distance=distances)
+    data_df = data_df.sort_values(by='distance')
+    data_df = data_df[['id', 'title', 'distance']]
+    print(data_df)
+
 # create word cloud for the keywords most centric to the cluster
 # km_model - the Kmean model object
 # word_vectorizer - the word2vec object, or most of time, the program loads the pre_trained word2vec model from pickle file
@@ -343,12 +352,25 @@ def makeImage(word_dict):
     plt.axis("off")
     plt.show()
 
+def retrieve_cluster_paper_idx(kmeans_model, desired_cluster):
+    return np.array([idx for idx, lab in enumerate(kmeans_model.labels_) if lab == desired_cluster])
+
+def retrieve_cluster_vectors(vectorized_docs, kmeans_model, desired_cluster):
+    vectorized_docs = np.stack(vectorized_docs, axis=0)
+    cluster_paper_idx = retrieve_cluster_paper_idx(kmeans_model, desired_cluster)
+    return vectorized_docs[cluster_paper_idx]
+
 # this function is a wrap function, which calls several other functions to show one specific cluster's information, including top centric keywords, centric papers, top cited papers, and word cloud for the top keywords
-def report_cluster_info(cluster_num, word_vectorizer, km_model, data_df, df_citations, vectorized_docs):
+def report_cluster_info(cluster_num, word_vectorizer, km_model, data_df, df_citations, vectorized_docs, sort_by='citation'):
     if cluster_num >= len(set(km_model.labels_)):
         print("cluster_num is beyond the boundary.")
         return
     
+    user_text_vector = vectorized_docs[0]
+    vectorized_docs = vectorized_docs[1:]
+
+    cluster_vectors = retrieve_cluster_vectors(vectorized_docs, km_model, cluster_num)
+
 
     centroids_tokens = []
     most_representative = word_vectorizer.wv.most_similar(positive =[km_model.cluster_centers_[cluster_num]], topn = 20)
@@ -356,7 +378,11 @@ def report_cluster_info(cluster_num, word_vectorizer, km_model, data_df, df_cita
         centroids_tokens.append(t[0])
 
     # centroids_papers_keywords_in_clusters(km_model, data_df, word_vectorizer, vectorized_docs, cluster_num, centroid_paper_num=5, top_key_words = 10)
-    top_influencial_in_cluster(data_df, df_citations, km_model, cluster_num, 10)
+    if sort_by == "citation":
+        top_influencial_in_cluster(data_df, df_citations, km_model, cluster_num, 10)
+    else:
+        distance = euclidean_dist(user_text_vector.reshape(1, -1), retrieve_cluster_vectors(vectorized_docs, km_model, cluster_num))[0]
+        top_similar_paper_in_cluster(data_df, df_citations, km_model, cluster_num, distance)
     centric_words_cloud(km_model, word_vectorizer, cluster_num, top_words=20)
 
 
@@ -377,14 +403,17 @@ def report_cluster_info_tfidf(cluster_num, tfidf_vectorizer, tfidf_km_model, dat
     # centric_words_cloud(tfidf_km_model, tfidf_vectorizer, cluster_num, top_words=10)
 # this function vectorize the user input and then utilize KMeans.predict to
 # find the closest cluster to the user query. Then it calls report_cluster_info to show the chosen cluster's information
-def predict_user_query_cluster(user_input, word_vectorizer, km_model, data_df, df_citations, vectorized_docs):
+def predict_user_query_cluster(user_input, word_vectorizer, km_model, data_df, df_citations, vectorized_docs, sort_by='similarity'):
     # get user unput vector
     user_input_vector = generate_vector_for_user_input(user_input, word_vectorizer)
+
+    # Pass in user_input_vector into vectorized_docs for distance sorting
+    vectorized_docs = [user_input_vector] + vectorized_docs
     
     label_ = km_model.predict(np.array(user_input_vector).reshape(1, -1).astype('float'))
     cluster_num = label_[0]
     print("this input is closest to this cluster {}".format(cluster_num))
-    report_cluster_info(cluster_num, word_vectorizer, km_model, data_df, df_citations, vectorized_docs)
+    report_cluster_info(cluster_num, word_vectorizer, km_model, data_df, df_citations, vectorized_docs, sort_by=sort_by)
 
 
 def predict_user_query_cluster_tfidf(user_input, tfidf_vectorizer, tfidf_km_model, data_df, df_citations):
