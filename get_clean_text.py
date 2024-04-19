@@ -52,7 +52,8 @@ def load_cs_papers(raw_suffix="", suffix=None, run_preprocessor=False, filter_20
         file_name = f"arxiv-cs-papers-{suffix}"
         if type(cs_papers) == dict:
             file_name = file_name + ".pickle"
-            file_path = get_cache_path(file_name)
+            # file_path = get_cache_path(file_name)
+            file_path = get_data_path(file_name)
             ensure_file_folder_exists(file_path)
             with open(file_path, "wb") as f:
                 pickle.dump(cs_papers, f)
@@ -66,17 +67,24 @@ def load_cs_papers(raw_suffix="", suffix=None, run_preprocessor=False, filter_20
 
 if __name__ == "__main__":
     # # Parses the dataset into a pd dataframe without normalization steps
-    cs_papers = load_cs_papers("")
+    # cs_papers = load_cs_papers("")
 
+    # Used for kmeans_classify.ipynb and downstream at bertopic_demo.ipynb
     # Loads the parsed/cached from "", normalizes the data, and then stores it at "-normalized"
-    # load_cs_papers("", "normalized", run_preprocessor=True)
+    cs_papers = load_cs_papers("", "normalized", run_preprocessor=True)
+
+    # Used for kmeans_classify.ipynb and downstream at bertopic_demo.ipynb
+    cs_tokens = load_cs_papers("", "abstract_spacy_tokens", run_preprocessor=True, cs_papers=cs_papers, to_include=["tokenize"])
+
+    # Used for bertopic_demo.ipynb
+    cs_papers = cs_papers.assign(Abstract_Tokens=cs_tokens['abstract'])
+    cs_papers.to_csv(get_data_path("arxiv-cs-papers-clean_lem_abbv_casefold_punct_stopwords_tokenized.csv"))
 
     # Another sample of loading to do preprocessing, but using the output from the previous loading
-    load_cs_papers("", "clean_abbv_casefold_punct", run_preprocessor=True, cs_papers=cs_papers)
+    # load_cs_papers("", "clean_abbv_casefold_punct", run_preprocessor=True, cs_papers=cs_papers)
 
     # Load file ran at normalized if exists, else extract from the raw data. Runs preprocessor for only tokenize
-    load_cs_papers("clean_abbv_casefold_punct", "clean_abbv_casefold_punct_spacytoken", run_preprocessor=True,
-                   to_include=['tokenize'])
+    # load_cs_papers("clean_abbv_casefold_punct", "clean_abbv_casefold_punct_spacytoken", run_preprocessor=True, to_include=['tokenize'])
 
     ## Loads the tokenized output
     # cached_tokens = load_cached_tokens("clean_abbv_casefold_punct_spacytoken")
