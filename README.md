@@ -95,7 +95,9 @@ Note: You do not need to run the last section: `Model Evaluation` if you do not 
 
 ### Run Evaluation Script ###
 Evaluation script is put in clustering_evaluation.jpynb.
-1. Prepare a .csv file which contains two columns "id", and "topic_id". This .csv file could be created after running the BERTopic or K-means clustering models.
+1. Prepare a .csv file which contains two columns "id", and "topic_id". This .csv file could be created after running the BERTopic or K-means clustering models.<br>
+![Clustering Result](/img/evaluation_preparation.png)<br>
+
 2. Open clustering_evaluation.jpynb, use your file name in step 1 to replace the sample file `data/bertopic-kmeans60.csv`.
 ```
 # load the clustering results with at least two columns: id and topic_id
