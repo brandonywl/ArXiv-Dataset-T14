@@ -55,6 +55,20 @@ OR
     
     * Download path: [Link](https://drive.google.com/file/d/1QBTCb5KfwFeIhS3eKrMNoYB92T6yt2np/view?usp=drive_link)
 
+
+### Run Streamlit Application ###
+
+1. Pre-requisite: Ensure that streamlit_env environment and the saved model is properly set-up (Setup Steps 5 & 6)
+
+2. Run the following command to initiatise Streamlit server application locally.
+    ```
+    streamlit run main.py
+    ```
+3. Access the web application via http://localhost:8501/
+4. If the set-up is successful, the page would be displayed as such:
+    
+    ![Streamlit Overview](/img/Streamlit%20-%20Overview.png)
+
 ### Run KMeans Text Clustering ###
 Running KMeans classification needs to open `kmeans_classify.ipynb`.<br>
 There are two parameters in the Notebook. They will control:<br>
@@ -78,15 +92,13 @@ The program will re-train the models, using word2vec to vectorize words, and nor
 After setting the above parameters, run the cells in sequence. <br><br>
 Note: You do not need to run the last section: `Model Evaluation` if you do not want to evaluate the model.
 
-### Run Streamlit Application ###
 
-1. Pre-requisite: Ensure that streamlit_env environment and the saved model is properly set-up (Setup Steps 5 & 6)
-
-2. Run the following command to initiatise Streamlit server application locally.
-    ```
-    streamlit run main.py
-    ```
-3. Access the web application via http://localhost:8501/
-4. If the set-up is successful, the page would be displayed as such:
-    
-    ![Streamlit Overview](/img/Streamlit%20-%20Overview.png)
+### Run Evaluation Script ###
+Evaluation script is put in clustering_evaluation.jpynb.
+1. Prepare a .csv file which contains two columns "id", and "topic_id". This .csv file could be created after running the BERTopic or K-means clustering models.
+2. Open clustering_evaluation.jpynb, use your file name in step 1 to replace the sample file `data/bertopic-kmeans60.csv`.
+```
+# load the clustering results with at least two columns: id and topic_id
+df_clustering = pd.read_csv("data/bertopic-kmeans60.csv",dtype={"id":object})
+```
+3. Run till the last cell. You will get the evaluation result.
