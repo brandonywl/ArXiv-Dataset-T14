@@ -21,6 +21,17 @@ Or you could also define pre-processing steps to be run. This snippet stores it 
     load_cs_papers("", "normalized", run_preprocessor=True)
 ```
 
+**NOTE**: There may be issues generating the taxonomy files due to the lack of the lxml library in beautifulsoup4. You will need to run the following code in your environment to solve it.
+```
+    conda install lxml
+```
+
+OR
+
+```
+    pip install lxml
+```
+
 5. Recommended: Setup seperate conda environments to run Streamlit app and to train BERTopic model
     ```
     conda env create -f streamlit_env.yml
