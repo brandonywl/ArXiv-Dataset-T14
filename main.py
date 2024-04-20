@@ -2,10 +2,16 @@ import os
 import numpy as np
 import pandas as pd
 import streamlit as st
+import networkx as nx
 from bertopic import BERTopic
 import plotly.graph_objects as go
 from sklearn.metrics.pairwise import pairwise_distances
 from src.topic_similarity import get_intertopic_dist
+import matplotlib.pyplot as plt
+from src.citations.analytics import get_paper_weights_and_edges, sort_paper_importance, visualize_subset
+from src.data_handler.dataloader import load_citations, load_raw_papers, load_taxonomy, load_category, load_raw_cs_papers, load_version
+from get_clean_text import load_cs_papers
+from src.citations.utils import filter_citations_to_subset
 
 st.header('Google Scholar (at home)')
 
@@ -48,21 +54,15 @@ def prep_df() -> pd.DataFrame:
     #             .merge(version_df[["id","year"]], on ="id")\
     #             .merge(abstract_df, on="id")\
     #             .merge(citation_count_df, how='left', on='id')
-
-    # ids = category_df.merge(taxonomy_df, on="category_id")\
-    #                 .query(f'group_name =="Computer Science"')\
-    #                 .drop_duplicates(["id","group_name"], inplace=False)["id"].values
-    # cits = citation_df.query('id.isin(@ids)', engine="python")\
-    #                 .merge(version_df[["id","year"]], on ="id")\
-    #                 .groupby(["year","id_reference"]).count()
-    # cits = cits.reset_index()
-    # cits.columns = ['year', 'id', 'citation_count']
-
-    # df = cits.merge(category_df,on="id").merge(abstract_df, on="id")
                 
     # df['citation_count'] = df['citation_count'].fillna(0)    
     df = pd.read_pickle('data/df.pickle')
     return df
+
+def prep_citation_network():
+    papers = load_cs_papers("clean_abbv_casefold_punct", run_preprocessor=False)
+    citations = load_citations()
+    return papers,citations
 
 def add_topic(df:pd.DataFrame, model) -> pd.DataFrame:
     df['Topic'] = model.topics_
@@ -71,6 +71,7 @@ def add_topic(df:pd.DataFrame, model) -> pd.DataFrame:
     return df
 
 base_df = prep_df()
+papers, citations = prep_citation_network()
 
 with st.form("input_form"):
     model_name = st.selectbox(
@@ -85,15 +86,21 @@ with st.form("input_form"):
         placeholder='Enter arXiv research paper name'
     )
 
+    pagerank_method = st.selectbox(
+        'Select PageRank method to use:',
+        ('paperrank', 'total'),
+        index=None
+    )
+
     submitted = st.form_submit_button("Submit")
 
 ## App layout
 tab_list = [
     "Overview", 
     "Similar Topics", 
-    "Information Retrieval"
+    "PageRank"
 ]
-overview_tab, sim_topic_tab, info_retrieval_tab = st.tabs(tab_list)
+overview_tab, sim_topic_tab, pagerank_tab = st.tabs(tab_list)
 
 if submitted:
     # model = BERTopic.load(f"models/bertopic - 2024:03:25:00:43:23")
@@ -132,3 +139,16 @@ with sim_topic_tab:
         
         st.write(sim_paper_rank)
 
+with pagerank_tab:
+    if submitted:
+        paper_weight_edges = get_paper_weights_and_edges(papers, citations, pagerank_method)
+        top_k = sort_paper_importance(paper_weight_edges, 10)
+
+        id_cache = []
+        score_cache = []
+        for paper_id, paper_score in top_k:
+            id_cache.append(paper_id)
+            score_cache.append(paper_score)
+
+        d = {'Paper ID':id_cache, 'Score':score_cache}
+        st.write(pd.DataFrame(data=d))

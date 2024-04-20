@@ -24,7 +24,7 @@ Or you could also define pre-processing steps to be run. This snippet stores it 
 5. Recommended: Setup seperate conda environments to run Streamlit app and to train BERTopic model
     ```
     conda env create -f streamlit_env.yml
-    conda env create -f bertopic_env.yml
+    conda env create -f bertopic_spacy_env.yml
     ```
 
     To replicate the bertopic training environment from scratch:
@@ -42,7 +42,7 @@ Or you could also define pre-processing steps to be run. This snippet stores it 
     ```
 6. Save trained BERTopic models to `models` folder.
     
-    * Download path: [Link](https://drive.google.com/file/d/1N2H3_4pi-JKt1K-oB7LmWD3rZbHa8WNN/view?usp=drive_link)
+    * Download path: [Link](hhttps://drive.google.com/file/d/1QBTCb5KfwFeIhS3eKrMNoYB92T6yt2np/view?usp=drive_link)
 
 
 - Running KMeans classification needs to open `kmeans_classify.ipynb`.<br>
