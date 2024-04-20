@@ -35,7 +35,7 @@ OR
 5. Recommended: Setup seperate conda environments to run Streamlit app and to train BERTopic model
     ```
     conda env create -f streamlit_env.yml
-    conda env create -f bertopic_env.yml
+    conda env create -f bertopic_spacy_env.yml
     ```
 
     To replicate the bertopic training environment from scratch:
@@ -53,9 +53,9 @@ OR
     ```
 6. Save trained BERTopic models to `models` folder.
     
-    * Download path: [Link](https://drive.google.com/file/d/1N2H3_4pi-JKt1K-oB7LmWD3rZbHa8WNN/view?usp=drive_link)
+    * Download path: [Link](https://drive.google.com/file/d/1QBTCb5KfwFeIhS3eKrMNoYB92T6yt2np/view?usp=drive_link)
 
-### Run Word2vec/Tf-idf + KMeans ###
+### Run KMeans Text Clustering ###
 Running KMeans classification needs to open `kmeans_classify.ipynb`.<br>
 There are two parameters in the Notebook. They will control:<br>
 a. `FAST_RUN_WITH_EXISTING_DATA`: whether re-train the model or just load model from existing pickle file<br>
@@ -74,4 +74,19 @@ FAST_RUN_WITH_EXISTING_DATA = False
 NORMALIZE_VECTOR = True
 ```
 The program will re-train the models, using word2vec to vectorize words, and normalize the vectorized words. The newly trained model will be put into sub-folder "model_data" and replace the previous models. <br>
-After setting the above parameters, run the cells in sequence. <br>
+
+After setting the above parameters, run the cells in sequence. <br><br>
+Note: You do not need to run the last section: `Model Evaluation` if you do not want to evaluate the model.
+
+### Run Streamlit Application ###
+
+1. Pre-requisite: Ensure that streamlit_env environment and the saved model is properly set-up (Setup Steps 5 & 6)
+
+2. Run the following command to initiatise Streamlit server application locally.
+    ```
+    streamlit run main.py
+    ```
+3. Access the web application via http://localhost:8501/
+4. If the set-up is successful, the page would be displayed as such:
+    
+    ![Streamlit Overview](/img/Streamlit%20-%20Overview.png)
