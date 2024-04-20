@@ -42,7 +42,7 @@ Or you could also define pre-processing steps to be run. This snippet stores it 
     ```
 6. Save trained BERTopic models to `models` folder.
     
-    * Download path: [Link](hhttps://drive.google.com/file/d/1QBTCb5KfwFeIhS3eKrMNoYB92T6yt2np/view?usp=drive_link)
+    * Download path: [Link](https://drive.google.com/file/d/1QBTCb5KfwFeIhS3eKrMNoYB92T6yt2np/view?usp=drive_link)
 
 ### Run KMeans Text Clustering ###
 Running KMeans classification needs to open `kmeans_classify.ipynb`.<br>
@@ -66,3 +66,16 @@ The program will re-train the models, using word2vec to vectorize words, and nor
 
 After setting the above parameters, run the cells in sequence. <br><br>
 Note: You do not need to run the last section: `Model Evaluation` if you do not want to evaluate the model.
+
+### Run Streamlit Application ###
+
+1. Pre-requisite: Ensure that streamlit_env environment and the saved model is properly set-up (Setup Steps 5 & 6)
+
+2. Run the following command to initiatise Streamlit server application locally.
+    ```
+    streamlit run main.py
+    ```
+3. Access the web application via http://localhost:8501/
+4. If the set-up is successful, the page would be displayed as such:
+    
+    ![Streamlit Overview](img/Streamlit - Overview.png)
