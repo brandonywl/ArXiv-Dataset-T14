@@ -78,4 +78,4 @@ Note: You do not need to run the last section: `Model Evaluation` if you do not 
 3. Access the web application via http://localhost:8501/
 4. If the set-up is successful, the page would be displayed as such:
     
-    ![Streamlit Overview](img/Streamlit - Overview.png)
+    ![Streamlit Overview](/img/Streamlit%20-%20Overview.png)
